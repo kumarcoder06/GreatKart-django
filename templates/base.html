@@ -29,16 +29,23 @@
     <!-- custom javascript -->
     <script src="{% static 'js/script.js' %}" type="text/javascript"></script>
 
-    <script type="text/javascript">
-        /// some script
+    <script>
+$(document).ready(function(){
+    $(".update-cart").on("submit", function(e){
+        e.preventDefault(); // Page reload roko
 
-        // jquery ready start
-        $(document).ready(function () {
-            // jQuery code
-
+        var form = $(this);
+        $.ajax({
+            type: "POST",
+            url: form.attr("action"),
+            data: form.serialize(),
+            success: function(response){
+                location.reload(); // Sirf refresh karo or DOM update bhi kar sakte ho
+            }
         });
-        // jquery end
-    </script>
+    });
+});
+</script>
 
 </head>
 
@@ -60,3 +67,8 @@
 
 <!-- Footer -->
   {% include 'includes/footer.html' %}
+
+
+  
+
+</body>
