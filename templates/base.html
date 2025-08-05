@@ -51,6 +51,15 @@ $(document).ready(function(){
 
 <body>
 
+{% if messages %}
+    <div id="messages-container" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 50%; z-index: 9999;">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} text-center" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
 <!-- navbar -->
  {% include 'includes/navbar.html' %}
@@ -68,6 +77,18 @@ $(document).ready(function(){
 <!-- Footer -->
   {% include 'includes/footer.html' %}
 
+
+  <script>
+    // Auto-hide messages after 3 seconds
+    setTimeout(function() {
+        let messages = document.getElementById('messages-container');
+        if (messages) {
+            messages.style.transition = "opacity 0.5s ease";
+            messages.style.opacity = "0";
+            setTimeout(() => messages.remove(), 500);
+        }
+    }, 3000);
+</script>
 
   
 
