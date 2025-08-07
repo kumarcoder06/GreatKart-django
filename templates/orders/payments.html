@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+
+
+<section class="section-content padding-y bg">
+    <div class="container">
+
+        <!-- ============================ COMPONENT 1 ================================= -->
+        <div class="row">
+            <h4 class="text-center">Review Your Products And Make Payments</h4>
+            <aside class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Billing Address</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text mb-0">{{order.full_name}}</p>
+                        <p class="card-text mb-0">{{order.full_address}}</p>
+                        <p class="card-text mb-0">{{order.city}} {{order.state}}</p>
+                        <p class="card-text mb-0">{{order.country}}</p>
+                        <p class="card-text mb-0">{{order.pincode}}</p>
+                        <p class="card-text mb-0">{{order.email}}</p>
+                        <p class="card-text mb-0">{{order.phone}}</p>
+                    </div>
+                </div> <!-- card.// -->
+                <!--  here payment method starts -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Payments Method</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text mb-2">Select your preferred payment method:</p>
+                        <div class="list-group" id="payment-options">
+                            <label class="list-group-item">
+                                <input type="radio" name="payment_method" value="cod" onclick="showPaymentImage('cod')"
+                                    checked>
+                                Cash on Delivery
+                            </label>
+                            <label class="list-group-item">
+                                <input type="radio" name="payment_method" value="gpay"
+                                    onclick="showPaymentImage('gpay')">
+                                Google Pay (GPay)
+                            </label>
+                            <label class="list-group-item">
+                                <input type="radio" name="payment_method" value="phonepe"
+                                    onclick="showPaymentImage('phonepe')">
+                                PhonePe
+                            </label>
+                            <label class="list-group-item">
+                                <input type="radio" name="payment_method" value="paypal"
+                                    onclick="showPaymentImage('paypal')">
+                                PayPal
+                            </label>
+                        </div>
+                    </div>
+                </div> <!-- card.// -->
+
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Review Products</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless table-shopping-cart">
+                            <thead class="text-muted">
+                                <tr class="small text-uppercase">
+                                    <th scope="col">Product</th>
+                                    <th scope="col" width="120">Quantity</th>
+                                    <th scope="col" width="120">Price</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order_products %}
+                                <tr>
+                                    <td>
+                                        <figure class="itemside align-items-center">
+                                            <div class="aside">
+                                                <img src="{{ item.product.images.url }}" class="img-sm">
+                                            </div>
+                                            <figcaption class="info">
+                                                <a href="{{ item.product.get_url }}" class="title text-dark">
+                                                    {{ item.product.product_name }}</a>
+                                                <p class="text-muted small">
+                                                    {% if item.variation.all %}
+                                                    {% for v in item.variation.all %}
+                                                    {{ v.variation_category|capfirst }} : {{ v.variation_value|capfirst
+                                                    }}<br>
+                                                    {% endfor %}
+                                                    {% endif %}
+                                                </p>
+                                            </figcaption>
+                                        </figure>
+                                    </td>
+                                    <td>
+                                        <label for="">{{ item.quantity }}</label>
+                                    </td>
+                                    <td>
+                                        <div class="price-wrap">
+                                            <var class="price">${{ item.product_price|floatformat:2 }}</var>
+                                            <small class="text-muted">${{ item.product.price|floatformat:2 }}
+                                                each</small>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div> <!-- card.// -->
+
+            </aside> <!-- col.// -->
+            <aside class="col-lg-4">
+
+                <div class="card">
+                    <div class="card-body">
+                        <dl class="dlist-align">
+                            <dt>Total price:</dt>
+                            <dd class="text-right">${{total}}</dd>
+                        </dl>
+                        <dl class="dlist-align">
+                            <dt>Tax:</dt>
+                            <dd class="text-right"> ${{tax}}</dd>
+                        </dl>
+                        <dl class="dlist-align">
+                            <dt>Grand Total:</dt>
+                            <dd class="text-right text-dark b"><strong>{{grand_total}}</strong></dd>
+                        </dl>
+                        <hr>
+                        <p class="text-center mb-3">
+                            <img id="payment-image" src="{% static 'images/payments/cod.png' %}" height="60">
+                        </p>
+                        <form action="{% url 'complete_payment' order.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">Make Payment</button>
+                        </form>
+
+                    </div> <!-- card-body.// -->
+                </div> <!-- card.// -->
+
+            </aside> <!-- col.// -->
+
+
+        </div> <!-- row.// -->
+        <!-- ============================ COMPONENT 1 END .// ================================= -->
+
+    </div> <!-- container .//  -->
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
+<script>
+    function showPaymentImage(method) {
+        let image = document.getElementById('payment-image');
+        if (method === 'cod') {
+            image.src = "{% static 'images/payments/cod.png' %}";
+        } else if (method === 'gpay') {
+            image.src = "{% static 'images/payments/gpay.png' %}";
+        } else if (method === 'phonepe') {
+            image.src = "{% static 'images/payments/phonepe.png' %}";
+        } else if (method === 'paypal') {
+            image.src = "{% static 'images/payments/paypal.png' %}";
+        }
+    }
+</script>
+
+
+{% endblock%}
