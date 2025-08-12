@@ -1,5 +1,5 @@
 """
-URL configuration for greatkart project.
+URL configuration for zentrox project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.2/topics/http/urls/
@@ -21,7 +21,8 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', include('admin_honeypot.urls', namespace = 'admin_honeypot')),
+    path('securelogin/', admin.site.urls),
     path('', views.home,name='home'),
     path('store/', include('store.urls')),
     path('cart/', include('carts.urls')),
@@ -29,5 +30,9 @@ urlpatterns = [
 
     # ORDERS
     path('orders/', include('orders.urls')),
+    # path('contact/', views.contact,name = 'contact'),
+
+
+
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
