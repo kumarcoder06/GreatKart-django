@@ -54,16 +54,20 @@ $(document).ready(function(){
 </head>
 
 <body>
-
 {% if messages %}
-    <div id="messages-container" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 50%; z-index: 9999;">
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} text-center" role="alert">
-                {{ message }}
-            </div>
-        {% endfor %}
-    </div>
+    {% for message in messages %}
+        <div class="alert 
+            {% if message.tags == 'success' %}alert-success
+            {% elif message.tags == 'error' %}alert-danger
+            {% elif message.tags == 'warning' %}alert-warning
+            {% else %}alert-info{% endif %}" 
+            role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
 {% endif %}
+
+
 
 <!-- navbar -->
  {% include 'includes/navbar.html' %}
@@ -81,17 +85,17 @@ $(document).ready(function(){
 <!-- Footer -->
   {% include 'includes/footer.html' %}
 
-
-  <script>
-    // Auto-hide messages after 3 seconds
-    setTimeout(function() {
-        let messages = document.getElementById('messages-container');
-        if (messages) {
-            messages.style.transition = "opacity 0.5s ease";
-            messages.style.opacity = "0";
-            setTimeout(() => messages.remove(), 500);
-        }
-    }, 3000);
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(function () {
+        let alerts = document.querySelectorAll(".alert");
+        alerts.forEach(function (alert) {
+            alert.style.transition = "opacity 0.5s ease";
+            alert.style.opacity = "0";
+            setTimeout(() => alert.remove(), 500); // remove after fade out
+        });
+    }, 3000); // disappear after 3 seconds
+});
 </script>
 
   

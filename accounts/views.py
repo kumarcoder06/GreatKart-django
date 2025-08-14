@@ -11,7 +11,10 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode,urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_bytes
+from django.contrib.auth.models import User
 
 from carts.views import _cart_id
 from carts.models import Cart,CartItem
@@ -20,6 +23,10 @@ from .models import UserProfile
 
 
 # Create your views here.
+from django.db import IntegrityError
+from django.contrib import messages
+from accounts.models import Account
+
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -30,37 +37,40 @@ def register(request):
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
             username = email.split("@")[0]
-            user = Account.objects.create_user(first_name=first_name,last_name=last_name,email=email,username=username,password=password)
-            user.phone_number = phone_number
-            user.save()
-            
-            
-            # USER ACTIVATION
-            current_site = get_current_site(request)
-            mail_subject = 'Please activate your account'
-            message = render_to_string('accounts/account_verification_email.html',{
-                'user': user,
-                'domain':current_site,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                'token' : default_token_generator.make_token(user)
 
-            })
-            to_email = email
-            send_email = EmailMessage(mail_subject,message,to=[to_email])
-            send_email.send()
-           
-            # messages.success(request, "Your account has been created successfully! Please log in.")
-            form = RegistrationForm()
-            return redirect('/accounts/login/?command=verification&email='+email)
+            # Prevent duplicate email (case-insensitive)
+            if Account.objects.filter(email__iexact=email).exists():
+                messages.error(request, "An account with this email already exists. Please log in or use Forgot Password.")
+                return redirect('login')
 
-            # return redirect('register')
+            # (Optional) also avoid username collisions if username is unique
+            if Account.objects.filter(username__iexact=username).exists():
+                messages.error(request, "Username derived from email already exists. Please choose another email.")
+                return redirect('register')
+
+            try:
+                user = Account.objects.create_user(
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=email,
+                    username=username,
+                    password=password
+                )
+                user.phone_number = phone_number
+                user.is_active = True  # activate immediately
+                user.save()
+
+                messages.success(request, "Your account has been created successfully! You can log in now.")
+                return redirect('login')
+            except IntegrityError:
+                # Safety net in case a race condition slips through
+                messages.error(request, "This email is already registered. Please log in or reset your password.")
+                return redirect('login')
     else:
         form = RegistrationForm()
 
-    context = {
-        'form': form ,
-    }
-    return render(request,'accounts/register.html',context)
+    return render(request, 'accounts/register.html', {'form': form})
+
     
    
 
@@ -128,33 +138,27 @@ def login(request):
 
     return render(request, 'accounts/login.html')
 
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, " Your account has been activated successfully.")
+        return redirect('login')  # change 'login' to your actual login page name
+    else:
+        messages.error(request, " Activation link is invalid or has expired.")
+        return redirect('signup')  # change 'signup' to your actual signup page name
 
 @login_required(login_url = 'login')
 def logout(request):
-    auth.logout(request)  # ✅ This clears the session
+    auth.logout(request)  #  This clears the session
     messages.info(request, "You have been logged out successfully!")
     return redirect('home')  # Redirect to login page or home page
-
-
-def activate(request , uidb64,token):
-    try:
-        uid = urlsafe_base64_decode(uidb64).decode()
-        user = Account._default_manager.get(pk=uid)
-    except(TypeError,ValueError,OverflowError,Account.DoesNotExist):
-        user=None
-
-
-    if user is not None and default_token_generator.check_token(user,token):
-        user.is_active =True
-        user.save()
-        messages.success(request,'Congratulations! Your Account is Activated.')
-        return redirect('login')
-
-    else:
-        messages.error(request,'Invalid activation link')
-        return redirect('register')
-    
-
 
 @login_required(login_url = 'login')
 def dashboard(request):

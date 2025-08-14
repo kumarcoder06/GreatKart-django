@@ -27,13 +27,13 @@ Already verified? <a href="{% url 'login' %}">login</a>
 
     <!-- Alert Messages  -->
      
-        {% if messages %}
+        <!-- {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-danger text-center py-2" role="alert">
                     {{ message }}
                 </div>
             {% endfor %}
-        {% endif %}
+        {% endif %} -->
 
       <form action="{% url 'login' %}" method="POST" autocomplete="off">
         {% csrf_token %}
