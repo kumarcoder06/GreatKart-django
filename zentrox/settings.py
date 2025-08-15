@@ -27,7 +27,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG',default=True,cast=bool)
 
 import os
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOST', '').split(',')
+ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOST', default='').split(',')
 if ALLOWED_HOSTS == ['*']:
     ALLOWED_HOSTS = ['*'] 
 
@@ -144,11 +144,12 @@ MEDIA_ROOT = BASE_DIR /'media'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 1025
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD =''
-EMAIL_USE_TLS = False
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
+# ==================== DEFAULTS ====================
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

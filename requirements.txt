@@ -22,11 +22,11 @@ python-dateutil==2.9.0.post0
 python-decouple==3.8
 pyttsx3==2.98
 pytz==2025.2
-pywin32==310
+# pywin32==310
 requests==2.32.4
 setuptools==80.9.0
 six==1.17.0
-SpeechRecognition==3.14.3
+# SpeechRecognition==3.14.3
 sqlparse==0.5.3
 standard-aifc==3.13.0
 standard-chunk==3.13.0
